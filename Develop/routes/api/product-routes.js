@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
+const sequelize = require('../../config/connection');
 
 // The `/api/products` endpoint
 
@@ -7,16 +8,65 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  Product.findAll({
+    order: [['created_at', 'DESC']],
+    attributes: ['id', 'product_name', 'price', 'stock', 'category_id', 'created_at'],
+    include: [
+      {model: Category,
+      attributes: ['category_name']
+    },
+      {model: Tag,
+        attributes: ['tag_name']
+      }
+    ]
+  })
+  .then(allData=> res.json(allData))
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  })
 });
 
 // get one product
 router.get('/:id', (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
+  Producr.findOne({
+    where:{
+      id: req.params.id
+    },
+    attributes: ['id', 'product_name', 'price', 'stock', 'category_id', 'created_at'],
+    include: [
+      {
+        model: Category,
+        attributes: ['category_name']
+      },
+      {model: Tag,
+        attributes: ['tag_name']
+      }
+    ]
+  })
+  .then (oneData=> {
+    if (!oneData){
+      res.status(404).json({ message: 'No product found with this id' });
+        return;
+    }
+    res,json(oneData);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 // create new product
 router.post('/', (req, res) => {
+  Product.create({
+    product_name: req.body.product_name,
+    price: req.body.price,
+    stock: req.body.stock,
+    tagIds: req.body.tagIds
+  })
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -25,6 +75,12 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
+ .then(createData => res.json(createData))
+ .catch(err => {
+  console.log(err);
+  res.status(500).json(err);
+});
+
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
@@ -91,6 +147,22 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
+  Product.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+  .then(deleteData => {
+    if (!deleteData) {
+      res.status(404).json({ message: 'No product found with this id' });
+      return;
+    }
+    res.json(deleteData);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(500).json(err);
+  });
 });
 
 module.exports = router;
