@@ -17,24 +17,24 @@ Category.hasMany(Product, {
 // Products belongToMany Tags (through ProductTag)
 Product.belongsToMany(Tag, {
   through: ProductTag,
- // as: 'product_tag',
+//  as: 'product_tag',
   foreignKey: 'product_id'
 });
 
 // Tags belongToMany Products (through ProductTag)
 Tag.belongsToMany(Product, {
   through: ProductTag,
- // as: 'tag_product',
+//  as: 'product_tag',
   foreignKey: 'product_id'
 });
 
-ProductTag.belongsToMany(Product, {
-  foreignKey: 'product_id'
-});
+// ProductTag.belongsToMany(Product, {
+//   foreignKey: 'product_id'
+// });
 
-ProductTag.belongsToMany(Tag, {
-  foreignKey: 'tag_id'
-});
+// ProductTag.belongsToMany(Tag, {
+//   foreignKey: 'tag_id'
+// });
 
 module.exports = {
   Product,
